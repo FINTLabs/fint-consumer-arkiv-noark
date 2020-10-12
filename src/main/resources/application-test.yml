@@ -1,0 +1,23 @@
+spring:
+ application:
+  name: fint-consumer-arkiv-noark
+
+fint:
+ events:
+  orgIds: mock.no
+  test-mode: true
+  queue-endpoint-enabled: true
+
+ audit:
+  test-mode: true
+
+ relations:
+  force-https: false
+  default-base-url: /
+
+ hazelcast:
+  members: localhost
+
+server:
+ context-path: ""
+ port: 8080
