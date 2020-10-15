@@ -12,6 +12,7 @@ import no.fint.event.model.Operation;
 import no.fint.event.model.Status;
 import no.fint.model.resource.FintLinks;
 import no.fint.relations.FintLinker;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -101,9 +102,12 @@ public class StatusCache {
     }
 
     private HttpStatus getStatus(String statusCode) {
+        if (StringUtils.isBlank(statusCode)) {
+            return HttpStatus.BAD_REQUEST;
+        }
         try {
             return HttpStatus.valueOf(statusCode);
-        } catch (IllegalArgumentException e) {
+        } catch (RuntimeException e) {
             return HttpStatus.BAD_REQUEST;
         }
     }
