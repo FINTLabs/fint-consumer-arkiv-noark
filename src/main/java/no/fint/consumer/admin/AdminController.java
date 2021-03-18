@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -47,14 +48,14 @@ public class AdminController {
 
     @GetMapping("/health")
     public ResponseEntity<Event<Health>> healthCheck(@RequestHeader(HeaderConstants.ORG_ID) String orgId,
-                                      @RequestHeader(HeaderConstants.CLIENT) String client) {
+                                                     @RequestHeader(HeaderConstants.CLIENT) String client) {
         log.debug("Health check on {} requested by {} ...", orgId, client);
         Event<Health> event = new Event<>(orgId, Constants.COMPONENT, DefaultActions.HEALTH, client);
         event.addData(new Health(Constants.COMPONENT_CONSUMER, HealthStatus.SENT_FROM_CONSUMER_TO_PROVIDER));
 
         final Optional<Event<Health>> response = consumerEventUtil.healthCheck(event);
 
-        return response.map(health ->  {
+        return response.map(health -> {
             log.debug("Health check response: {}", health.getData());
             health.addData(new Health(Constants.COMPONENT_CONSUMER, HealthStatus.RECEIVED_IN_CONSUMER_FROM_PROVIDER));
             return ResponseEntity.ok(health);
@@ -88,6 +89,20 @@ public class AdminController {
                 .collect(Collectors
                         .toMap(Function.identity(),
                                 k -> cacheManager.getCache(k).map(Cache::size).orElse(0)));
+    }
+
+    @GetMapping("/cache/status")
+    public Map<String, Map<String, CacheEntry>> getCacheStatus() {
+        return cacheManager
+                .getKeys()
+                .stream()
+                .map(s -> StringUtils.split(s, ':'))
+                .collect(
+                        Collectors.groupingBy(s -> s[2],
+                                Collectors.toMap(s -> s[3],
+                                        s -> cacheManager.getCache(String.join(":", s))
+                                                .map(c -> new CacheEntry(new Date(c.getLastUpdated()), c.size()))
+                                                .orElse(new CacheEntry(null, null)))));
     }
 
     @PostMapping({"/cache/rebuild", "/cache/rebuild/{model}"})

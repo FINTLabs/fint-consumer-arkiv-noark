@@ -78,6 +78,9 @@ public class StatusCache {
                 if (event.getOperation() == Operation.VALIDATE) {
                     fintAuditService.audit(event, Status.SENT_TO_CLIENT);
                     return ResponseEntity.ok(event.getResponse());
+                } else if (event.getOperation() == Operation.DELETE) {
+                    fintAuditService.audit(event, Status.SENT_TO_CLIENT);
+                    return ResponseEntity.noContent().build();
                 }
                 result = objectMapper.convertValue(event.getData().get(0), valueType);
                 URI location = UriComponentsBuilder.fromUriString(linker.getSelfHref(result)).build().toUri();
