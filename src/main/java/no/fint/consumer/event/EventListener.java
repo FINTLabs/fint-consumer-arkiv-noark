@@ -5,6 +5,7 @@ import no.fint.audit.FintAuditService;
 import no.fint.cache.CacheService;
 import no.fint.consumer.config.Constants;
 import no.fint.consumer.config.ConsumerProps;
+import no.fint.consumer.metrics.CustomMetricEvents;
 import no.fint.consumer.status.StatusCache;
 import no.fint.event.model.*;
 import no.fint.events.FintEventListener;
@@ -40,6 +41,9 @@ public class EventListener implements FintEventListener {
     @Autowired
     private SynchronousEvents synchronousEvents;
 
+    @Autowired(required = false)
+    private CustomMetricEvents customMetricEvents;
+
     @PostConstruct
     public void init() {
         fintEvents.registerUpstreamSystemListener(this);
@@ -73,6 +77,12 @@ public class EventListener implements FintEventListener {
             }
             return;
         }
+
+        try {
+            customMetricEvents.update(event);
+        } catch (Exception ignored) {
+        }
+
         if (statusCache.containsKey(event.getCorrId())) {
             statusCache.put(event.getCorrId(), event);
         }
@@ -103,5 +113,4 @@ public class EventListener implements FintEventListener {
             fintAuditService.audit(event, Status.ERROR);
         }
     }
-
 }
