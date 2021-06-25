@@ -13,7 +13,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
-import spock.lang.Ignore
 import spock.lang.Specification
 
 import java.util.concurrent.BlockingQueue
@@ -42,7 +41,6 @@ class DokumentfilControllerSpec extends Specification {
     @SpringBean
     SynchronousEvents synchronousEvents = Mock()
 
-    @Ignore
     def 'Assert that the proper GET mapping is present'() {
         given:
         def queue = Mock(BlockingQueue)
@@ -72,7 +70,6 @@ class DokumentfilControllerSpec extends Specification {
         1 * queue.poll(5, TimeUnit.MINUTES) >> event
     }
 
-    @Ignore
     def 'Assert that the proper POST mapping is present'() {
         given:
         def content = getClass().getResourceAsStream('/testfile.pdf').getBytes()
@@ -93,7 +90,6 @@ class DokumentfilControllerSpec extends Specification {
         })
     }
 
-    @Ignore
     def 'Assert that the proper PUT mapping is present'() {
         given:
         def content = getClass().getResourceAsStream('/testfile.pdf').getBytes()
