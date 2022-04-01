@@ -56,7 +56,10 @@ public class StatusCache {
     }
 
     public void put(String corrId, Event event) {
+        log.info("Putti pluttu plot: {} (corrId), {} (event)", corrId, event);
+        log.info("Cache size before put: {}", cache.size());
         cache.put(corrId, event);
+        log.info("Cache size after put: {}", cache.size());
     }
 
     public <T extends FintLinks> ResponseEntity handleStatusRequest(String id, String orgId, FintLinker<T> linker, Class<T> valueType) {
@@ -64,8 +67,8 @@ public class StatusCache {
             return ResponseEntity.status(HttpStatus.GONE).build();
         }
         Event event = get(id);
-        log.debug("Event: {}", event);
-        log.trace("Data: {}", event.getData());
+        log.info("Event: {}", event);
+        log.info("Data: {}", event.getData());
         if (!event.getOrgId().equals(orgId)) {
             return ResponseEntity.badRequest().body(new EventResponse() { { setMessage("Invalid OrgId"); } } );
         }
@@ -79,6 +82,7 @@ public class StatusCache {
                     fintAuditService.audit(event, Status.SENT_TO_CLIENT);
                     return ResponseEntity.ok(event.getResponse());
                 } else if (event.getOperation() == Operation.DELETE) {
+                    log.info("Woooohoo, there's someone wants to delete: {}", event);
                     fintAuditService.audit(event, Status.SENT_TO_CLIENT);
                     return ResponseEntity.noContent().build();
                 }
