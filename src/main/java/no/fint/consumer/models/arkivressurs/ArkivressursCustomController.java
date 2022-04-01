@@ -52,6 +52,7 @@ public class ArkivressursCustomController {
         event.setOperation(Operation.DELETE);
 
         fintAuditService.audit(event);
+        consumerEventUtil.send(event);
         statusCache.put(event.getCorrId(), event);
 
         URI location = UriComponentsBuilder.fromUriString(linker.self()).path("status/{id}").buildAndExpand(event.getCorrId()).toUri();
@@ -71,6 +72,7 @@ public class ArkivressursCustomController {
         event.setOperation(Operation.DELETE);
 
         fintAuditService.audit(event);
+        consumerEventUtil.send(event);
         statusCache.put(event.getCorrId(), event);
 
         URI location = UriComponentsBuilder.fromUriString(linker.self()).path("status/{id}").buildAndExpand(event.getCorrId()).toUri();
