@@ -1,0 +1,20 @@
+name: Build consumer
+on:
+  push:
+  workflow_dispatch:
+
+env:
+  REGISTRY_NAME: fintlabsacr
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get repo name
+        run: echo "REPO_NAME=${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
+
+      - name: Build container
+        run: |
+          docker build . -t ${{env.REGISTRY_NAME}}.azurecr.io/${{env.REPO_NAME}}:${{github.sha}}
