@@ -39,6 +39,7 @@ public class LinkMapper {
             .put("no.fint.model.arkiv.kodeverk.KorrespondansepartType", "/arkiv/kodeverk/korrespondanseparttype")
             .put("no.fint.model.arkiv.kodeverk.Merknadstype", "/arkiv/kodeverk/merknadstype")
             .put("no.fint.model.arkiv.kodeverk.PartRolle", "/arkiv/kodeverk/partrolle")
+            .put("no.fint.model.arkiv.kodeverk.Saksmappetype", "/arkiv/kodeverk/saksmappetype")
             .put("no.fint.model.arkiv.kodeverk.Saksstatus", "/arkiv/kodeverk/saksstatus")
             .put("no.fint.model.arkiv.kodeverk.Skjermingshjemmel", "/arkiv/kodeverk/skjermingshjemmel")
             .put("no.fint.model.arkiv.kodeverk.Rolle", "/arkiv/kodeverk/rolle")

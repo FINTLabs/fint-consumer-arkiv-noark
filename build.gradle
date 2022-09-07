@@ -26,11 +26,9 @@ apply plugin: 'jacoco'
 version = "${version}-${apiVersion}"
 
 repositories {
-    mavenLocal()
+    maven { url 'https://repo.fintlabs.no/releases' }
     jcenter()
-    maven {
-        url 'https://repo.fintlabs.no/releases'
-    }
+    mavenLocal()
 }
 
 dependencies {
@@ -40,10 +38,10 @@ dependencies {
     compile('no.fint:fint-audit-azure-eventhub-plugin:1.0.0')
     compile('io.projectreactor:reactor-core:3.3.2.RELEASE')
 
-    compile('no.fint:fint-api-service-discover:1.1.1')
-    compile('no.fint:fint-cache:2.6.1')
+    compile('no.fint:fint-api-service-discover:1.2.0')
+    compile('no.fint:fint-cache:2.8.0')
     compile('no.fint:fint-event-model:3.0.1')
-    compile('no.fint:fint-events:2.3.1')
+    compile('no.fint:fint-events:2.4.0')
     compile('no.fint:fint-hazelcast:1.2.0')
     compile('no.fint:fint-relations:2.2.1')
     compile('no.fint:fint-spring-secrets:0.2.2')
