@@ -6,6 +6,7 @@ import no.fint.model.resource.arkiv.noark.SakResource;
 import no.fint.relations.FintRelationsMediaType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,6 +23,16 @@ public class SakCustomController {
             @RequestHeader(name = HeaderConstants.ORG_ID, required = false) String orgId,
             @RequestHeader(name = HeaderConstants.CLIENT, required = false) String client) throws InterruptedException {
         return sakController.getSakByMappeId(ar + "/" + sekvensnummer, orgId, client);
+    }
+
+    @PutMapping("/mappeid/{ar}/{sekvensnummer}")
+    public ResponseEntity putSakByMappeArSekvensnummer(
+            @PathVariable String ar,
+            @PathVariable String sekvensnummer,
+            @RequestHeader(name = HeaderConstants.ORG_ID, required = false) String orgId,
+            @RequestHeader(name = HeaderConstants.CLIENT, required = false) String client,
+            @RequestBody SakResource body) throws InterruptedException {
+        return sakController.putSakByMappeId(ar + "/" + sekvensnummer, orgId, client, body);
     }
 
 }
