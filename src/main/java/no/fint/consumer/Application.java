@@ -7,6 +7,7 @@ import no.fint.events.annotations.EnableFintEvents;
 import no.fint.relations.annotations.EnableFintRelations;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableFintRelations
@@ -15,6 +16,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableFintAudit
 @EnableScheduling
 @EnableSpringfox
+@ComponentScan("no.fint.antlr.odata")
 @SpringBootApplication
 public class Application {
 

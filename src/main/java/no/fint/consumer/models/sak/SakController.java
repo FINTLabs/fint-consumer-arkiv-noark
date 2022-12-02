@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
+import no.fint.antlr.odata.ODataFilterService;
 import org.apache.commons.lang3.StringUtils;
 
 import no.fint.audit.FintAuditService;
@@ -75,6 +76,9 @@ public class SakController {
     @Autowired
     private SynchronousEvents synchronousEvents;
 
+    @Autowired
+    private ODataFilterService oDataFilterService;
+
     @GetMapping("/last-updated")
     public Map<String, String> getLastUpdated(@RequestHeader(name = HeaderConstants.ORG_ID, required = false) String orgId) {
         if (cacheService == null) {
@@ -105,6 +109,7 @@ public class SakController {
             @RequestParam(defaultValue = "0") long sinceTimeStamp,
             @RequestParam(defaultValue = "0") int size,
             @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(required = false) String $filter,
             HttpServletRequest request) {
         if (cacheService == null) {
             throw new CacheDisabledException("Sak cache is disabled.");
@@ -121,6 +126,13 @@ public class SakController {
         event.setOperation(Operation.READ);
         if (StringUtils.isNotBlank(request.getQueryString())) {
             event.setQuery("?" + request.getQueryString());
+        }
+        if (StringUtils.isNotBlank($filter)) {
+            oDataFilterService.validate($filter);
+            if (!oDataFilterService.validate($filter)) {
+                throw new IllegalArgumentException("OData Filter is not valid");
+            }
+            event.setQuery(StringUtils.isBlank(request.getQueryString())? "?" + $filter : event.getQuery() + "+" + $filter);
         }
         fintAuditService.audit(event);
         fintAuditService.audit(event, Status.CACHE);
