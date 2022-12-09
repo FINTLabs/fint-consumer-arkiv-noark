@@ -5,12 +5,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
-import no.fint.antlr.odata.ODataFilterService;
-import org.apache.commons.lang3.StringUtils;
-
+import no.fint.antlr.FintFilterService;
 import no.fint.audit.FintAuditService;
-
-import no.fint.cache.exceptions.*;
+import no.fint.cache.exceptions.CacheNotFoundException;
 import no.fint.consumer.config.Constants;
 import no.fint.consumer.config.ConsumerProps;
 import no.fint.consumer.event.ConsumerEventUtil;
@@ -19,11 +16,15 @@ import no.fint.consumer.exceptions.*;
 import no.fint.consumer.status.StatusCache;
 import no.fint.consumer.utils.EventResponses;
 import no.fint.consumer.utils.RestEndpoints;
-
-import no.fint.event.model.*;
-
+import no.fint.event.model.Event;
+import no.fint.event.model.HeaderConstants;
+import no.fint.event.model.Operation;
+import no.fint.event.model.Status;
+import no.fint.model.arkiv.noark.NoarkActions;
+import no.fint.model.resource.arkiv.noark.SakResource;
+import no.fint.model.resource.arkiv.noark.SakResources;
 import no.fint.relations.FintRelationsMediaType;
-
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -32,18 +33,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
-import java.net.UnknownHostException;
 import java.net.URI;
-
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
-
-import no.fint.model.resource.arkiv.noark.SakResource;
-import no.fint.model.resource.arkiv.noark.SakResources;
-import no.fint.model.arkiv.noark.NoarkActions;
 
 @Slf4j
 @Api(tags = {"Sak"})
@@ -77,7 +73,7 @@ public class SakController {
     private SynchronousEvents synchronousEvents;
 
     @Autowired
-    private ODataFilterService oDataFilterService;
+    private FintFilterService fintFilterService;
 
     @GetMapping("/last-updated")
     public Map<String, String> getLastUpdated(@RequestHeader(name = HeaderConstants.ORG_ID, required = false) String orgId) {
@@ -128,11 +124,10 @@ public class SakController {
             event.setQuery("?" + request.getQueryString());
         }
         if (StringUtils.isNotBlank($filter)) {
-            oDataFilterService.validate($filter);
-            if (!oDataFilterService.validate($filter)) {
+            if (!fintFilterService.validate($filter)) {
                 throw new IllegalArgumentException("OData Filter is not valid");
             }
-            event.setQuery(StringUtils.isBlank(request.getQueryString())? "?" + $filter : event.getQuery() + "+" + $filter);
+            event.setQuery(StringUtils.isBlank(request.getQueryString()) ? "?" + $filter : event.getQuery() + "+" + $filter);
         }
         fintAuditService.audit(event);
         fintAuditService.audit(event, Status.CACHE);
@@ -195,7 +190,7 @@ public class SakController {
             fintAuditService.audit(response, Status.SENT_TO_CLIENT);
 
             return linker.toResource(sak);
-        }    
+        }
     }
 
     @GetMapping("/systemid/{id:.+}")
@@ -239,9 +234,8 @@ public class SakController {
             fintAuditService.audit(response, Status.SENT_TO_CLIENT);
 
             return linker.toResource(sak);
-        }    
+        }
     }
-
 
 
     // Writable class
@@ -275,7 +269,7 @@ public class SakController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).location(location).build();
     }
 
-  
+
     @PutMapping("/mappeid/{id:.+}")
     public ResponseEntity putSakByMappeId(
             @PathVariable String id,
@@ -299,7 +293,7 @@ public class SakController {
         URI location = UriComponentsBuilder.fromUriString(linker.self()).path("status/{id}").buildAndExpand(event.getCorrId()).toUri();
         return ResponseEntity.status(HttpStatus.ACCEPTED).location(location).build();
     }
-  
+
     @PutMapping("/systemid/{id:.+}")
     public ResponseEntity putSakBySystemId(
             @PathVariable String id,
@@ -323,7 +317,7 @@ public class SakController {
         URI location = UriComponentsBuilder.fromUriString(linker.self()).path("status/{id}").buildAndExpand(event.getCorrId()).toUri();
         return ResponseEntity.status(HttpStatus.ACCEPTED).location(location).build();
     }
-  
+
 
     //
     // Exception handlers
