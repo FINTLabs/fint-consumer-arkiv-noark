@@ -1,5 +1,6 @@
 package no.fint.consumer.models.sak;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableMap;
@@ -35,8 +36,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -106,7 +106,10 @@ public class SakController {
             @RequestParam(defaultValue = "0") int size,
             @RequestParam(defaultValue = "0") int offset,
             @RequestParam(required = false) String $filter,
-            HttpServletRequest request) {
+            HttpServletRequest request) throws InterruptedException {
+        if (cacheService == null && StringUtils.isNotBlank($filter)) {
+            return this.getSakByOdataFilter(client, orgId, $filter);
+        }
         if (cacheService == null) {
             throw new CacheDisabledException("Sak cache is disabled.");
         }
@@ -123,12 +126,7 @@ public class SakController {
         if (StringUtils.isNotBlank(request.getQueryString())) {
             event.setQuery("?" + request.getQueryString());
         }
-        if (StringUtils.isNotBlank($filter)) {
-            if (!fintFilterService.validate($filter)) {
-                throw new IllegalArgumentException("OData Filter is not valid");
-            }
-            event.setQuery(StringUtils.isBlank(request.getQueryString()) ? "?" + $filter : event.getQuery() + "+" + $filter);
-        }
+
         fintAuditService.audit(event);
         fintAuditService.audit(event, Status.CACHE);
 
@@ -360,6 +358,45 @@ public class SakController {
     @ExceptionHandler(CacheNotFoundException.class)
     public ResponseEntity handleCacheNotFound(Exception e) {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ErrorResponse.of(e));
+    }
+
+    private SakResources getSakByOdataFilter(String client, String orgId, String $filter) throws InterruptedException {
+        if (props.isOverrideOrgId() || orgId == null) {
+            orgId = props.getDefaultOrgId();
+        }
+        if (client == null) {
+            client = props.getDefaultClient();
+        }
+
+        log.debug("OrgId: {}, Client: {}, Filter: {}", orgId, client, $filter);
+
+        if (cacheService != null) {
+            throw new UnsupportedOperationException("Dont support oDataFilter with cache");
+        }
+
+        if (StringUtils.isEmpty($filter)) {
+            throw new IllegalArgumentException("OdataFilter is missing");
+        }
+
+        if (!fintFilterService.validate($filter)) {
+            throw new IllegalArgumentException("OData Filter is not valid");
+        }
+
+        Event event = new Event(orgId, Constants.COMPONENT, NoarkActions.GET_SAK, client);
+        event.setOperation(Operation.READ);
+        event.setQuery($filter);
+
+        BlockingQueue<Event> queue = synchronousEvents.register(event);
+        consumerEventUtil.send(event);
+
+        Event response = EventResponses.handle(queue.poll(5, TimeUnit.MINUTES));
+
+        if (response.getData() == null ||
+                response.getData().isEmpty()) return new SakResources();
+
+        ArrayList<SakResource> saker = objectMapper.convertValue(response.getData(), new TypeReference<ArrayList<SakResource>>(){});
+        fintAuditService.audit(response, Status.SENT_TO_CLIENT);
+        return linker.toResources(saker);
     }
 
 }

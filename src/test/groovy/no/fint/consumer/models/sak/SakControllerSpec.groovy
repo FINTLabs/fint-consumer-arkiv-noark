@@ -73,4 +73,39 @@ class SakControllerSpec extends Specification {
         1 * queue.poll(5, TimeUnit.MINUTES) >> event
     }
 
+    def "Verify that OdataFilter works"() {
+        given:
+        def event = objectMapper.readValue('''{
+    "corrId": "aaf3518e-c9b1-4152-a117-d536c166b0bb",
+    "action": "GET_SAK",
+    "operation": "READ",
+    "status": "DOWNSTREAM_QUEUE",
+    "time": 1586843296434,
+    "orgId": "mock.no",
+    "source": "kulturminnevern",
+    "client": "CACHE_SERVICE",
+    "data": [
+        {
+            "mappeId": {
+                "identifikatorverdi": "2020/42"
+            },
+            "tittel": "Spock"
+        }
+    ],
+    "responseStatus": "ACCEPTED",
+    "query": "mappeId/2020/42"
+}''', Event)
+        def queue = Mock(BlockingQueue)
+        when:
+        def response = mockMvc.perform(
+                get('/sak?$filter=systemId/identifikatorverdi eq \'system-id-1\'')
+                        .header('x-org-id', 'test.org')
+                        .header('x-client', 'Spock'))
+
+        then:
+        response.andExpect(status().is2xxSuccessful()).andExpect(jsonPath('$._embedded._entries[0].tittel').value(equalTo('Spock')))
+        1 * synchronousEvents.register({ it.request.query == 'systemId/identifikatorverdi eq \'system-id-1\''}) >> queue
+        1 * queue.poll(5, TimeUnit.MINUTES) >> event
+    }
+
 }
