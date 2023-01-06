@@ -107,11 +107,12 @@ public class SakController {
             @RequestParam(defaultValue = "0") int offset,
             @RequestParam(required = false) String $filter,
             HttpServletRequest request) throws InterruptedException {
-        if (cacheService == null && StringUtils.isNotBlank($filter)) {
-            return this.getSakByOdataFilter(client, orgId, $filter);
-        }
         if (cacheService == null) {
-            throw new CacheDisabledException("Sak cache is disabled.");
+            if (StringUtils.isNotBlank($filter)) {
+                return getSakByOdataFilter(client, orgId, $filter);
+            } else {
+                throw new CacheDisabledException("Sak cache is disabled.");
+            }
         }
         if (props.isOverrideOrgId() || orgId == null) {
             orgId = props.getDefaultOrgId();
@@ -316,7 +317,6 @@ public class SakController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).location(location).build();
     }
 
-
     //
     // Exception handlers
     //
@@ -360,27 +360,20 @@ public class SakController {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ErrorResponse.of(e));
     }
 
+    //
+    // Private methods
+    //
     private SakResources getSakByOdataFilter(String client, String orgId, String $filter) throws InterruptedException {
+        if (!fintFilterService.validate($filter)) {
+            throw new IllegalArgumentException("OData Filter is not valid");
+        }
         if (props.isOverrideOrgId() || orgId == null) {
             orgId = props.getDefaultOrgId();
         }
         if (client == null) {
             client = props.getDefaultClient();
         }
-
         log.debug("OrgId: {}, Client: {}, Filter: {}", orgId, client, $filter);
-
-        if (cacheService != null) {
-            throw new UnsupportedOperationException("Dont support oDataFilter with cache");
-        }
-
-        if (StringUtils.isEmpty($filter)) {
-            throw new IllegalArgumentException("OdataFilter is missing");
-        }
-
-        if (!fintFilterService.validate($filter)) {
-            throw new IllegalArgumentException("OData Filter is not valid");
-        }
 
         Event event = new Event(orgId, Constants.COMPONENT, NoarkActions.GET_SAK, client);
         event.setOperation(Operation.READ);
