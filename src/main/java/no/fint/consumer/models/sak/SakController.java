@@ -48,6 +48,8 @@ import java.util.stream.Stream;
 @RequestMapping(name = "Sak", value = RestEndpoints.SAK, produces = {FintRelationsMediaType.APPLICATION_HAL_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE})
 public class SakController {
 
+    private static final String ODATA_FILTER_QUERY_OPTION = "$filter=";
+
     @Autowired(required = false)
     private SakCacheService cacheService;
 
@@ -377,7 +379,7 @@ public class SakController {
 
         Event event = new Event(orgId, Constants.COMPONENT, NoarkActions.GET_SAK, client);
         event.setOperation(Operation.READ);
-        event.setQuery($filter);
+        event.setQuery(ODATA_FILTER_QUERY_OPTION.concat($filter));
 
         BlockingQueue<Event> queue = synchronousEvents.register(event);
         consumerEventUtil.send(event);
