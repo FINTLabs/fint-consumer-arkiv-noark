@@ -104,7 +104,7 @@ class SakControllerSpec extends Specification {
 
         then:
         response.andExpect(status().is2xxSuccessful()).andExpect(jsonPath('$._embedded._entries[0].tittel').value(equalTo('Spock')))
-        1 * synchronousEvents.register({ it.request.query == 'systemId/identifikatorverdi eq \'system-id-1\''}) >> queue
+        1 * synchronousEvents.register({ it.request.query == '$filter=systemId/identifikatorverdi eq \'system-id-1\''}) >> queue
         1 * queue.poll(5, TimeUnit.MINUTES) >> event
     }
 
