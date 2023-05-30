@@ -1,7 +1,6 @@
 package no.fint.consumer;
 
 import com.github.springfox.loader.EnableSpringfox;
-import no.fint.antlr.EnableFintFilter;
 import no.fint.audit.EnableFintAudit;
 import no.fint.cache.annotations.EnableFintCache;
 import no.fint.events.annotations.EnableFintEvents;
@@ -16,7 +15,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableFintAudit
 @EnableScheduling
 @EnableSpringfox
-@EnableFintFilter
 @SpringBootApplication
 public class Application {
 
