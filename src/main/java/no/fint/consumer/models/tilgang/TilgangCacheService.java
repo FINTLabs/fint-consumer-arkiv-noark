@@ -107,7 +107,10 @@ public class TilgangCacheService extends CacheService<TilgangResource> {
         } else {
             data = objectMapper.convertValue(event.getData(), javaType);
         }
-        data.forEach(linker::mapLinks);
+        data.forEach(resource -> {
+            linker.mapLinks(resource);
+            linker.resetSelfLinks(resource);
+        });
         if (NoarkActions.valueOf(event.getAction()) == NoarkActions.UPDATE_TILGANG) {
             if (event.getResponseStatus() == ResponseStatus.ACCEPTED || event.getResponseStatus() == ResponseStatus.CONFLICT) {
                 List<CacheObject<TilgangResource>> cacheObjects = data
