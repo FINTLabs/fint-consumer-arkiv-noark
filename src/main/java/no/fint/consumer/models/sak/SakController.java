@@ -191,7 +191,7 @@ public class SakController {
 
             fintAuditService.audit(response, Status.SENT_TO_CLIENT);
 
-            return linker.toResource(sak);
+            return linker.mapAndResetLinks(sak);
         }
     }
 
@@ -235,7 +235,7 @@ public class SakController {
 
             fintAuditService.audit(response, Status.SENT_TO_CLIENT);
 
-            return linker.toResource(sak);
+            return linker.mapAndResetLinks(sak);
         }
     }
 
@@ -347,7 +347,7 @@ public class SakController {
         ArrayList<SakResource> saker = objectMapper.convertValue(response.getData(), new TypeReference<ArrayList<SakResource>>() {
         });
         fintAuditService.audit(response, Status.SENT_TO_CLIENT);
-        return linker.toResources(saker);
+        return linker.mapAndResetLinks(saker);
     }
 
     //
