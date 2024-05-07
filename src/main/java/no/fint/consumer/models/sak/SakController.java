@@ -191,7 +191,8 @@ public class SakController {
 
             fintAuditService.audit(response, Status.SENT_TO_CLIENT);
 
-            return linker.mapAndResetLinks(sak);
+            linker.mapAndResetLinks(sak);
+            return linker.toResource(sak);
         }
     }
 
@@ -235,7 +236,8 @@ public class SakController {
 
             fintAuditService.audit(response, Status.SENT_TO_CLIENT);
 
-            return linker.mapAndResetLinks(sak);
+            linker.mapAndResetLinks(sak);
+            return linker.toResource(sak);
         }
     }
 
