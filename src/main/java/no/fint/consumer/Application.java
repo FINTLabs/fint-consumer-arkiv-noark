@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableFintAudit
 @EnableScheduling
 @EnableSpringfox
+@EnableFintFilter
 @SpringBootApplication
 public class Application {
 
