@@ -87,15 +87,15 @@ public class StatusCache {
                 event.setMessage(location.toString());
                 fintAuditService.audit(event, Status.SENT_TO_CLIENT);
                 if (props.isUseCreated())
-                    return ResponseEntity.created(location).body(linker.toResource(result));
-                return ResponseEntity.status(HttpStatus.SEE_OTHER).location(location).body(linker.toResource(result));
+                    return ResponseEntity.created(location).body(linker.mapAndResetLinks(result));
+                return ResponseEntity.status(HttpStatus.SEE_OTHER).location(location).body(linker.mapAndResetLinks(result));
             case ERROR:
                 fintAuditService.audit(event, Status.SENT_TO_CLIENT);
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(event.getResponse());
             case CONFLICT:
                 fintAuditService.audit(event, Status.SENT_TO_CLIENT);
                 result = objectMapper.convertValue(event.getData().get(0), valueType);
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(linker.toResource(result));
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(linker.mapAndResetLinks(result));
             case REJECTED:
                 fintAuditService.audit(event, Status.SENT_TO_CLIENT);
                 return ResponseEntity.status(getStatus(event.getStatusCode())).body(event.getResponse());

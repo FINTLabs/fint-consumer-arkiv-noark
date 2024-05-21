@@ -107,7 +107,10 @@ public class AdministrativEnhetCacheService extends CacheService<AdministrativEn
         } else {
             data = objectMapper.convertValue(event.getData(), javaType);
         }
-        data.forEach(linker::mapLinks);
+        data.forEach(resource -> {
+            linker.mapLinks(resource);
+            linker.resetSelfLinks(resource);
+        });
         if (NoarkActions.valueOf(event.getAction()) == NoarkActions.UPDATE_ADMINISTRATIVENHET) {
             if (event.getResponseStatus() == ResponseStatus.ACCEPTED || event.getResponseStatus() == ResponseStatus.CONFLICT) {
                 List<CacheObject<AdministrativEnhetResource>> cacheObjects = data

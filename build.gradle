@@ -39,11 +39,11 @@ dependencies {
     compile('io.projectreactor:reactor-core:3.3.2.RELEASE')
 
     compile('no.fint:fint-api-service-discover:1.2.0')
-    compile('no.fint:fint-cache:2.8.0')
+    compile('no.fint:fint-cache:3.0.0')
     compile('no.fint:fint-event-model:3.0.1')
     compile('no.fint:fint-events:2.4.0')
     compile('no.fint:fint-hazelcast:1.2.0')
-    compile('no.fint:fint-relations:2.2.1')
+    compile('no.fintlabs:fint-relations:3.0.0-rc-3')
     compile('no.fint:fint-spring-secrets:0.2.2')
 
     compile('com.hazelcast:hazelcast:3.11.2')
