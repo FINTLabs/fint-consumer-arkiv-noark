@@ -117,10 +117,7 @@ public class ArkivressursCacheService extends CacheService<ArkivressursResource>
         } else {
             data = objectMapper.convertValue(event.getData(), javaType);
         }
-        data.forEach(resource -> {
-            linker.mapLinks(resource);
-            linker.resetSelfLinks(resource);
-        });
+        data.forEach(linker::mapLinks);
         if (NoarkActions.valueOf(event.getAction()) == NoarkActions.UPDATE_ARKIVRESSURS) {
             if (event.getResponseStatus() == ResponseStatus.ACCEPTED || event.getResponseStatus() == ResponseStatus.CONFLICT) {
                 List<CacheObject<ArkivressursResource>> cacheObjects = data
