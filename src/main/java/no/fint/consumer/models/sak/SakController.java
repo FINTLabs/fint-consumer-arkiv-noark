@@ -349,7 +349,7 @@ public class SakController {
         ArrayList<SakResource> saker = objectMapper.convertValue(response.getData(), new TypeReference<ArrayList<SakResource>>() {
         });
         fintAuditService.audit(response, Status.SENT_TO_CLIENT);
-        saker.forEach(s-> linker.mapAndResetLinks(s));
+        saker.forEach(s -> linker.mapAndResetLinks(s));
         return linker.toResources(saker);
     }
 
