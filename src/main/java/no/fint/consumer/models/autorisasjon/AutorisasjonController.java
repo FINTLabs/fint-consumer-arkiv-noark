@@ -182,7 +182,7 @@ public class AutorisasjonController {
 
             fintAuditService.audit(response, Status.SENT_TO_CLIENT);
 
-            return linker.toResource(autorisasjon);
+            return linker.mapAndResetLinks(autorisasjon);
         }    
     }
 

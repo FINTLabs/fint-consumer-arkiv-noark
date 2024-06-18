@@ -182,7 +182,7 @@ public class TilgangController {
 
             fintAuditService.audit(response, Status.SENT_TO_CLIENT);
 
-            return linker.toResource(tilgang);
+            return linker.mapAndResetLinks(tilgang);
         }    
     }
 

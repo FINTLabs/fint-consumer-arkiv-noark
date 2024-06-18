@@ -107,10 +107,7 @@ public class AutorisasjonCacheService extends CacheService<AutorisasjonResource>
         } else {
             data = objectMapper.convertValue(event.getData(), javaType);
         }
-        data.forEach(resource -> {
-            linker.mapLinks(resource);
-            linker.resetSelfLinks(resource);
-        });
+        data.forEach(linker::mapLinks);
         if (NoarkActions.valueOf(event.getAction()) == NoarkActions.UPDATE_AUTORISASJON) {
             if (event.getResponseStatus() == ResponseStatus.ACCEPTED || event.getResponseStatus() == ResponseStatus.CONFLICT) {
                 List<CacheObject<AutorisasjonResource>> cacheObjects = data

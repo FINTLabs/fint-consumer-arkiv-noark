@@ -182,7 +182,7 @@ public class ArkivdelController {
 
             fintAuditService.audit(response, Status.SENT_TO_CLIENT);
 
-            return linker.toResource(arkivdel);
+            return linker.mapAndResetLinks(arkivdel);
         }    
     }
 
