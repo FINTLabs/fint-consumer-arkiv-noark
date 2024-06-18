@@ -182,7 +182,7 @@ public class ArkivressursController {
 
             fintAuditService.audit(response, Status.SENT_TO_CLIENT);
 
-            return linker.toResource(arkivressurs);
+            return linker.mapAndResetLinks(arkivressurs);
         }    
     }
 
@@ -226,7 +226,7 @@ public class ArkivressursController {
 
             fintAuditService.audit(response, Status.SENT_TO_CLIENT);
 
-            return linker.toResource(arkivressurs);
+            return linker.mapAndResetLinks(arkivressurs);
         }    
     }
 
