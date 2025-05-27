@@ -1,16 +1,14 @@
 package no.fint.consumer.models.sak;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-
+import no.fint.antlr.FintFilterService;
 import no.fint.audit.FintAuditService;
-
-import no.fint.cache.exceptions.*;
+import no.fint.cache.exceptions.CacheNotFoundException;
 import no.fint.consumer.config.Constants;
 import no.fint.consumer.config.ConsumerProps;
 import no.fint.consumer.event.ConsumerEventUtil;
@@ -19,12 +17,15 @@ import no.fint.consumer.exceptions.*;
 import no.fint.consumer.status.StatusCache;
 import no.fint.consumer.utils.EventResponses;
 import no.fint.consumer.utils.RestEndpoints;
-import no.fint.antlr.FintFilterService;
-
-import no.fint.event.model.*;
-
+import no.fint.event.model.Event;
+import no.fint.event.model.HeaderConstants;
+import no.fint.event.model.Operation;
+import no.fint.event.model.Status;
+import no.fint.model.arkiv.noark.NoarkActions;
+import no.fint.model.resource.arkiv.noark.SakResource;
+import no.fint.model.resource.arkiv.noark.SakResources;
 import no.fint.relations.FintRelationsMediaType;
-
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -33,19 +34,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
-import java.net.UnknownHostException;
 import java.net.URI;
-
-import java.util.Map;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
-
-import no.fint.model.resource.arkiv.noark.SakResource;
-import no.fint.model.resource.arkiv.noark.SakResources;
-import no.fint.model.arkiv.noark.NoarkActions;
 
 @Slf4j
 @Api(tags = {"Sak"})
@@ -118,8 +114,9 @@ public class SakController {
         if (cacheService == null) {
             if (StringUtils.isNotBlank($filter)) {
                 return getSakByOdataFilter(client, orgId, $filter);
+            } else {
+                throw new CacheDisabledException("Sak cache is disabled.");
             }
-            throw new CacheDisabledException("Sak cache is disabled.");
         }
         if (props.isOverrideOrgId() || orgId == null) {
             orgId = props.getDefaultOrgId();
@@ -151,49 +148,6 @@ public class SakController {
         fintAuditService.audit(event, Status.CACHE_RESPONSE, Status.SENT_TO_CLIENT);
 
         return linker.toResources(resources, offset, size, cacheService.getCacheSize(orgId));
-    }
-    
-    @PostMapping("/$query")
-    public SakResources getSakByQuery(
-            @RequestHeader(name = HeaderConstants.ORG_ID, required = false)   String orgId,
-            @RequestHeader(name = HeaderConstants.CLIENT, required = false) String client,
-            @RequestParam(defaultValue = "0") long sinceTimeStamp,
-            @RequestParam(defaultValue = "0") int  size,
-            @RequestParam(defaultValue = "0") int  offset,
-            @RequestBody(required = false) String query,
-            HttpServletRequest request
-    ) throws InterruptedException {
-        return getSak(orgId, client, sinceTimeStamp, size, offset, query, request);
-    }
-
-    private SakResources getSakByOdataFilter(
-        String client, String orgId, String $filter
-    ) throws InterruptedException {
-        if (!fintFilterService.validate($filter))
-            throw new IllegalArgumentException("OData Filter is not valid");
-    
-        if (props.isOverrideOrgId() || orgId == null) orgId = props.getDefaultOrgId();
-        if (client == null) client = props.getDefaultClient();
-    
-        Event event = new Event(
-                orgId, Constants.COMPONENT,
-                NoarkActions.GET_SAK, client);
-        event.setOperation(Operation.READ);
-        event.setQuery(ODATA_FILTER_QUERY_OPTION.concat($filter));
-    
-        BlockingQueue<Event> queue = synchronousEvents.register(event);
-        consumerEventUtil.send(event);
-    
-        Event response = EventResponses.handle(queue.poll(5, TimeUnit.MINUTES));
-        if (response.getData() == null || response.getData().isEmpty())
-            return new SakResources();
-    
-        ArrayList<SakResource> list = objectMapper.convertValue(
-                response.getData(),
-                new TypeReference<ArrayList<SakResource>>() {});
-        fintAuditService.audit(response, Status.SENT_TO_CLIENT);
-        list.forEach(r -> linker.mapAndResetLinks(r));
-        return linker.toResources(list);
     }
 
 
@@ -238,7 +192,7 @@ public class SakController {
             fintAuditService.audit(response, Status.SENT_TO_CLIENT);
 
             return linker.mapAndResetLinks(sak);
-        }    
+        }
     }
 
     @GetMapping("/systemid/{id:.+}")
@@ -282,9 +236,8 @@ public class SakController {
             fintAuditService.audit(response, Status.SENT_TO_CLIENT);
 
             return linker.mapAndResetLinks(sak);
-        }    
+        }
     }
-
 
 
     // Writable class
@@ -318,7 +271,7 @@ public class SakController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).location(location).build();
     }
 
-  
+
     @PutMapping("/mappeid/{id:.+}")
     public ResponseEntity putSakByMappeId(
             @PathVariable String id,
@@ -342,7 +295,7 @@ public class SakController {
         URI location = UriComponentsBuilder.fromUriString(linker.self()).path("status/{id}").buildAndExpand(event.getCorrId()).toUri();
         return ResponseEntity.status(HttpStatus.ACCEPTED).location(location).build();
     }
-  
+
     @PutMapping("/systemid/{id:.+}")
     public ResponseEntity putSakBySystemId(
             @PathVariable String id,
@@ -366,7 +319,37 @@ public class SakController {
         URI location = UriComponentsBuilder.fromUriString(linker.self()).path("status/{id}").buildAndExpand(event.getCorrId()).toUri();
         return ResponseEntity.status(HttpStatus.ACCEPTED).location(location).build();
     }
-  
+
+    private SakResources getSakByOdataFilter(String client, String orgId, String $filter) throws InterruptedException {
+        if (!fintFilterService.validate($filter)) {
+            throw new IllegalArgumentException("OData Filter is not valid");
+        }
+        if (props.isOverrideOrgId() || orgId == null) {
+            orgId = props.getDefaultOrgId();
+        }
+        if (client == null) {
+            client = props.getDefaultClient();
+        }
+        log.debug("OrgId: {}, Client: {}, Filter: {}", orgId, client, $filter);
+
+        Event event = new Event(orgId, Constants.COMPONENT, NoarkActions.GET_SAK, client);
+        event.setOperation(Operation.READ);
+        event.setQuery(ODATA_FILTER_QUERY_OPTION.concat($filter));
+
+        BlockingQueue<Event> queue = synchronousEvents.register(event);
+        consumerEventUtil.send(event);
+
+        Event response = EventResponses.handle(queue.poll(5, TimeUnit.MINUTES));
+
+        if (response.getData() == null ||
+                response.getData().isEmpty()) return new SakResources();
+
+        ArrayList<SakResource> saker = objectMapper.convertValue(response.getData(), new TypeReference<ArrayList<SakResource>>() {
+        });
+        fintAuditService.audit(response, Status.SENT_TO_CLIENT);
+        saker.forEach(s -> linker.mapAndResetLinks(s));
+        return linker.toResources(saker);
+    }
 
     //
     // Exception handlers

@@ -2,7 +2,6 @@ package no.fint.consumer.models.autorisasjon;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +18,6 @@ import no.fint.consumer.exceptions.*;
 import no.fint.consumer.status.StatusCache;
 import no.fint.consumer.utils.EventResponses;
 import no.fint.consumer.utils.RestEndpoints;
-import no.fint.antlr.FintFilterService;
 
 import no.fint.event.model.*;
 
@@ -37,7 +35,6 @@ import java.net.UnknownHostException;
 import java.net.URI;
 
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -53,8 +50,6 @@ import no.fint.model.arkiv.noark.NoarkActions;
 @RestController
 @RequestMapping(name = "Autorisasjon", value = RestEndpoints.AUTORISASJON, produces = {FintRelationsMediaType.APPLICATION_HAL_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE})
 public class AutorisasjonController {
-
-    private static final String ODATA_FILTER_QUERY_OPTION = "$filter=";
 
     @Autowired(required = false)
     private AutorisasjonCacheService cacheService;
@@ -79,9 +74,6 @@ public class AutorisasjonController {
 
     @Autowired
     private SynchronousEvents synchronousEvents;
-
-    @Autowired
-    private FintFilterService fintFilterService;
 
     @GetMapping("/last-updated")
     public Map<String, String> getLastUpdated(@RequestHeader(name = HeaderConstants.ORG_ID, required = false) String orgId) {
@@ -113,12 +105,8 @@ public class AutorisasjonController {
             @RequestParam(defaultValue = "0") long sinceTimeStamp,
             @RequestParam(defaultValue = "0") int size,
             @RequestParam(defaultValue = "0") int offset,
-            @RequestParam(required = false) String $filter,
-            HttpServletRequest request) throws InterruptedException {
+            HttpServletRequest request) {
         if (cacheService == null) {
-            if (StringUtils.isNotBlank($filter)) {
-                return getAutorisasjonByOdataFilter(client, orgId, $filter);
-            }
             throw new CacheDisabledException("Autorisasjon cache is disabled.");
         }
         if (props.isOverrideOrgId() || orgId == null) {
@@ -151,49 +139,6 @@ public class AutorisasjonController {
         fintAuditService.audit(event, Status.CACHE_RESPONSE, Status.SENT_TO_CLIENT);
 
         return linker.toResources(resources, offset, size, cacheService.getCacheSize(orgId));
-    }
-    
-    @PostMapping("/$query")
-    public AutorisasjonResources getAutorisasjonByQuery(
-            @RequestHeader(name = HeaderConstants.ORG_ID, required = false)   String orgId,
-            @RequestHeader(name = HeaderConstants.CLIENT, required = false) String client,
-            @RequestParam(defaultValue = "0") long sinceTimeStamp,
-            @RequestParam(defaultValue = "0") int  size,
-            @RequestParam(defaultValue = "0") int  offset,
-            @RequestBody(required = false) String query,
-            HttpServletRequest request
-    ) throws InterruptedException {
-        return getAutorisasjon(orgId, client, sinceTimeStamp, size, offset, query, request);
-    }
-
-    private AutorisasjonResources getAutorisasjonByOdataFilter(
-        String client, String orgId, String $filter
-    ) throws InterruptedException {
-        if (!fintFilterService.validate($filter))
-            throw new IllegalArgumentException("OData Filter is not valid");
-    
-        if (props.isOverrideOrgId() || orgId == null) orgId = props.getDefaultOrgId();
-        if (client == null) client = props.getDefaultClient();
-    
-        Event event = new Event(
-                orgId, Constants.COMPONENT,
-                NoarkActions.GET_AUTORISASJON, client);
-        event.setOperation(Operation.READ);
-        event.setQuery(ODATA_FILTER_QUERY_OPTION.concat($filter));
-    
-        BlockingQueue<Event> queue = synchronousEvents.register(event);
-        consumerEventUtil.send(event);
-    
-        Event response = EventResponses.handle(queue.poll(5, TimeUnit.MINUTES));
-        if (response.getData() == null || response.getData().isEmpty())
-            return new AutorisasjonResources();
-    
-        ArrayList<AutorisasjonResource> list = objectMapper.convertValue(
-                response.getData(),
-                new TypeReference<ArrayList<AutorisasjonResource>>() {});
-        fintAuditService.audit(response, Status.SENT_TO_CLIENT);
-        list.forEach(r -> linker.mapAndResetLinks(r));
-        return linker.toResources(list);
     }
 
 

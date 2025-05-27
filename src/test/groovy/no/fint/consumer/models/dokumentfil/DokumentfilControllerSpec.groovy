@@ -66,7 +66,7 @@ class DokumentfilControllerSpec extends Specification {
                 .andExpect(status().isOk())
                 .andExpect(header().string('Content-Type', containsString('application/pdf')))
                 .andExpect(content().string(startsWith('%PDF-1.4')))
-        1 * synchronousEvents.register({ it.request.query == 'systemId/abcd1234' }) >> queue
+        1 * synchronousEvents.register({ it.request.query == 'systemid/abcd1234' }) >> queue
         1 * queue.poll(5, TimeUnit.MINUTES) >> event
     }
 
