@@ -2,27 +2,31 @@ package no.fint.consumer.models.dokumentfil;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
+import no.fint.consumer.utils.ContentDisposition;
+import no.fint.model.felles.kompleksedatatyper.Identifikator;
+import org.apache.commons.lang3.StringUtils;
+
 import no.fint.audit.FintAuditService;
-import no.fint.cache.exceptions.CacheNotFoundException;
+
+import no.fint.cache.exceptions.*;
 import no.fint.consumer.config.Constants;
 import no.fint.consumer.config.ConsumerProps;
 import no.fint.consumer.event.ConsumerEventUtil;
 import no.fint.consumer.event.SynchronousEvents;
 import no.fint.consumer.exceptions.*;
 import no.fint.consumer.status.StatusCache;
-import no.fint.consumer.utils.ContentDisposition;
 import no.fint.consumer.utils.EventResponses;
 import no.fint.consumer.utils.RestEndpoints;
+import no.fint.antlr.FintFilterService;
+
 import no.fint.event.model.*;
-import no.fint.model.arkiv.noark.NoarkActions;
-import no.fint.model.felles.kompleksedatatyper.Identifikator;
-import no.fint.model.resource.arkiv.noark.DokumentfilResource;
-import no.fint.model.resource.arkiv.noark.DokumentfilResources;
+
 import no.fint.relations.FintRelationsMediaType;
-import org.apache.commons.lang3.StringUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -32,15 +36,21 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
-import java.net.URI;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
+import java.net.URI;
+
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
+
+import no.fint.model.resource.arkiv.noark.DokumentfilResource;
+import no.fint.model.resource.arkiv.noark.DokumentfilResources;
+import no.fint.model.arkiv.noark.NoarkActions;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 @Slf4j
 @Api(tags = {"Dokumentfil"})
@@ -48,6 +58,8 @@ import java.util.stream.Stream;
 @RestController
 @RequestMapping(name = "Dokumentfil", value = RestEndpoints.DOKUMENTFIL, produces = {FintRelationsMediaType.APPLICATION_HAL_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE})
 public class DokumentfilController {
+
+    private static final String ODATA_FILTER_QUERY_OPTION = "$filter=";
 
     @Autowired(required = false)
     private DokumentfilCacheService cacheService;
@@ -72,6 +84,9 @@ public class DokumentfilController {
 
     @Autowired
     private SynchronousEvents synchronousEvents;
+
+    @Autowired
+    private FintFilterService fintFilterService;
 
     @GetMapping("/last-updated")
     public Map<String, String> getLastUpdated(@RequestHeader(name = HeaderConstants.ORG_ID, required = false) String orgId) {
@@ -103,8 +118,12 @@ public class DokumentfilController {
             @RequestParam(defaultValue = "0") long sinceTimeStamp,
             @RequestParam(defaultValue = "0") int size,
             @RequestParam(defaultValue = "0") int offset,
-            HttpServletRequest request) {
+            @RequestParam(required = false) String $filter,
+            HttpServletRequest request) throws InterruptedException {
         if (cacheService == null) {
+            if (StringUtils.isNotBlank($filter)) {
+                return getDokumentfilByOdataFilter(client, orgId, $filter);
+            }
             throw new CacheDisabledException("Dokumentfil cache is disabled.");
         }
         if (props.isOverrideOrgId() || orgId == null) {
@@ -137,6 +156,49 @@ public class DokumentfilController {
         fintAuditService.audit(event, Status.CACHE_RESPONSE, Status.SENT_TO_CLIENT);
 
         return linker.toResources(resources, offset, size, cacheService.getCacheSize(orgId));
+    }
+    
+    @PostMapping("/$query")
+    public DokumentfilResources getDokumentfilByQuery(
+            @RequestHeader(name = HeaderConstants.ORG_ID, required = false)   String orgId,
+            @RequestHeader(name = HeaderConstants.CLIENT, required = false) String client,
+            @RequestParam(defaultValue = "0") long sinceTimeStamp,
+            @RequestParam(defaultValue = "0") int  size,
+            @RequestParam(defaultValue = "0") int  offset,
+            @RequestBody(required = false) String query,
+            HttpServletRequest request
+    ) throws InterruptedException {
+        return getDokumentfil(orgId, client, sinceTimeStamp, size, offset, query, request);
+    }
+
+    private DokumentfilResources getDokumentfilByOdataFilter(
+        String client, String orgId, String $filter
+    ) throws InterruptedException {
+        if (!fintFilterService.validate($filter))
+            throw new IllegalArgumentException("OData Filter is not valid");
+    
+        if (props.isOverrideOrgId() || orgId == null) orgId = props.getDefaultOrgId();
+        if (client == null) client = props.getDefaultClient();
+    
+        Event event = new Event(
+                orgId, Constants.COMPONENT,
+                NoarkActions.GET_DOKUMENTFIL, client);
+        event.setOperation(Operation.READ);
+        event.setQuery(ODATA_FILTER_QUERY_OPTION.concat($filter));
+    
+        BlockingQueue<Event> queue = synchronousEvents.register(event);
+        consumerEventUtil.send(event);
+    
+        Event response = EventResponses.handle(queue.poll(5, TimeUnit.MINUTES));
+        if (response.getData() == null || response.getData().isEmpty())
+            return new DokumentfilResources();
+    
+        ArrayList<DokumentfilResource> list = objectMapper.convertValue(
+                response.getData(),
+                new TypeReference<ArrayList<DokumentfilResource>>() {});
+        fintAuditService.audit(response, Status.SENT_TO_CLIENT);
+        list.forEach(r -> linker.mapAndResetLinks(r));
+        return linker.toResources(list);
     }
 
 
@@ -203,6 +265,7 @@ public class DokumentfilController {
                 .body(decoded);
     }
 
+
     // Writable class
     @GetMapping("/status/{id}")
     public ResponseEntity getStatus(
@@ -210,50 +273,7 @@ public class DokumentfilController {
             @RequestHeader(HeaderConstants.ORG_ID) String orgId,
             @RequestHeader(HeaderConstants.CLIENT) String client) {
         log.debug("/status/{} for {} from {}", id, orgId, client);
-        if (!statusCache.containsKey(id)) {
-            return ResponseEntity.status(HttpStatus.GONE).build();
-        }
-        Event event = statusCache.get(id);
-        log.debug("Event: {}", event);
-        log.trace("Data: {}", event.getData());
-        if (!event.getOrgId().equals(orgId)) {
-            return ResponseEntity.badRequest().body(new EventResponse() {
-                {
-                    setMessage("Invalid OrgId");
-                }
-            });
-        }
-        if (event.getResponseStatus() == null) {
-            return ResponseEntity.status(HttpStatus.ACCEPTED).build();
-        }
-        DokumentfilResource result;
-        URI location;
-        switch (event.getResponseStatus()) {
-            case ACCEPTED:
-                if (event.getOperation() == Operation.VALIDATE) {
-                    fintAuditService.audit(event, Status.SENT_TO_CLIENT);
-                    return ResponseEntity.ok(event.getResponse());
-                }
-                result = objectMapper.convertValue(event.getData().get(0), DokumentfilResource.class);
-                location = UriComponentsBuilder.fromUriString(linker.getSelfHref(result)).build().toUri();
-                event.setMessage(location.toString());
-                fintAuditService.audit(event, Status.SENT_TO_CLIENT);
-                if (props.isUseCreated())
-                    return getResponseEntity(result, HttpStatus.CREATED, location);
-                return getResponseEntity(result, HttpStatus.SEE_OTHER, location);
-            case ERROR:
-                fintAuditService.audit(event, Status.SENT_TO_CLIENT);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(event.getResponse());
-            case CONFLICT:
-                fintAuditService.audit(event, Status.SENT_TO_CLIENT);
-                result = objectMapper.convertValue(event.getData().get(0), DokumentfilResource.class);
-                location = UriComponentsBuilder.fromUriString(linker.getSelfHref(result)).build().toUri();
-                return getResponseEntity(result, HttpStatus.CONFLICT, location);
-            case REJECTED:
-                fintAuditService.audit(event, Status.SENT_TO_CLIENT);
-                return ResponseEntity.badRequest().body(event.getResponse());
-        }
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(event.getResponse());
+        return statusCache.handleStatusRequest(id, orgId, linker, DokumentfilResource.class);
     }
 
     @PostMapping
@@ -267,7 +287,6 @@ public class DokumentfilController {
         log.debug("postDokumentfil, OrgId: {}, Client: {}", orgId, client);
         return updateDokumentfil(Operation.CREATE, orgId, client, format, disposition, body);
     }
-
     private ResponseEntity updateDokumentfil(Operation operation, String orgId, String client, String format, String disposition, byte[] body) {
         ContentDisposition contentDisposition = ContentDisposition.parse(disposition);
         DokumentfilResource dokument = new DokumentfilResource();
@@ -290,6 +309,7 @@ public class DokumentfilController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).location(location).build();
     }
 
+
     @PutMapping("/systemid/{id:.+}")
     public ResponseEntity putDokumentfilBySystemId(
             @PathVariable String id,
@@ -302,6 +322,7 @@ public class DokumentfilController {
         log.debug("putDokumentfilBySystemId {}, OrgId: {}, Client: {}", id, orgId, client);
         return updateDokumentfil(Operation.UPDATE, orgId, client, format, disposition, body);
     }
+  
 
     //
     // Exception handlers
@@ -347,3 +368,4 @@ public class DokumentfilController {
     }
 
 }
+
