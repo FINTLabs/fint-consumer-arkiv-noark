@@ -6,6 +6,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
+import no.fint.consumer.utils.ContentDisposition;
+import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import org.apache.commons.lang3.StringUtils;
 
 import no.fint.audit.FintAuditService;
@@ -26,6 +28,7 @@ import no.fint.event.model.*;
 import no.fint.relations.FintRelationsMediaType;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +49,8 @@ import java.util.stream.Stream;
 import no.fint.model.resource.arkiv.noark.DokumentfilResource;
 import no.fint.model.resource.arkiv.noark.DokumentfilResources;
 import no.fint.model.arkiv.noark.NoarkActions;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 @Slf4j
 @Api(tags = {"Dokumentfil"})
@@ -198,7 +203,7 @@ public class DokumentfilController {
 
 
     @GetMapping("/systemid/{id:.+}")
-    public DokumentfilResource getDokumentfilBySystemId(
+    public ResponseEntity getDokumentfilBySystemId(
             @PathVariable String id,
             @RequestHeader(name = HeaderConstants.ORG_ID, required = false) String orgId,
             @RequestHeader(name = HeaderConstants.CLIENT, required = false) String client) throws InterruptedException {
@@ -222,7 +227,7 @@ public class DokumentfilController {
 
             fintAuditService.audit(event, Status.CACHE_RESPONSE, Status.SENT_TO_CLIENT);
 
-            return dokumentfil.map(linker::toResource).orElseThrow(() -> new EntityNotFoundException(id));
+            return ResponseEntity.ok(dokumentfil.map(linker::toResource).orElseThrow(() -> new EntityNotFoundException(id)));
 
         } else {
             BlockingQueue<Event> queue = synchronousEvents.register(event);
@@ -235,12 +240,30 @@ public class DokumentfilController {
 
             DokumentfilResource dokumentfil = objectMapper.convertValue(response.getData().get(0), DokumentfilResource.class);
 
+            final ResponseEntity responseEntity = getResponseEntity(dokumentfil, HttpStatus.OK, null);
+
             fintAuditService.audit(response, Status.SENT_TO_CLIENT);
 
-            return linker.mapAndResetLinks(dokumentfil);
-        }    
+            return responseEntity;
+        }
     }
 
+    private ResponseEntity getResponseEntity(DokumentfilResource dokumentfil, HttpStatus status, URI location) {
+        byte[] decoded = Base64.getDecoder().decode(dokumentfil.getData());
+
+        ContentDisposition contentDisposition = ContentDisposition.builder("attachment")
+                .filename(dokumentfil.getFilnavn(), StandardCharsets.UTF_8)
+                .build();
+        ResponseEntity.BodyBuilder builder = ResponseEntity
+                .status(status)
+                .header(HttpHeaders.CONTENT_TYPE, dokumentfil.getFormat())
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
+        if (location != null) {
+            builder = builder.location(location);
+        }
+        return builder
+                .body(decoded);
+    }
 
 
     // Writable class
@@ -257,46 +280,47 @@ public class DokumentfilController {
     public ResponseEntity postDokumentfil(
             @RequestHeader(name = HeaderConstants.ORG_ID) String orgId,
             @RequestHeader(name = HeaderConstants.CLIENT) String client,
-            @RequestBody DokumentfilResource body,
-            @RequestParam(name = "validate", required = false) boolean validate
+            @RequestHeader(name = HttpHeaders.CONTENT_TYPE) String format,
+            @RequestHeader(name = HttpHeaders.CONTENT_DISPOSITION) String disposition,
+            @RequestBody byte[] body
     ) {
-        log.debug("postDokumentfil, Validate: {}, OrgId: {}, Client: {}", validate, orgId, client);
-        log.trace("Body: {}", body);
-        linker.mapLinks(body);
+        log.debug("postDokumentfil, OrgId: {}, Client: {}", orgId, client);
+        return updateDokumentfil(Operation.CREATE, orgId, client, format, disposition, body);
+    }
+    private ResponseEntity updateDokumentfil(Operation operation, String orgId, String client, String format, String disposition, byte[] body) {
+        ContentDisposition contentDisposition = ContentDisposition.parse(disposition);
+        DokumentfilResource dokument = new DokumentfilResource();
+        dokument.setData(Base64.getEncoder().encodeToString(body));
+        dokument.setFilnavn(contentDisposition.getFilename());
+        dokument.setFormat(format);
+        linker.mapLinks(dokument);
         Event event = new Event(orgId, Constants.COMPONENT, NoarkActions.UPDATE_DOKUMENTFIL, client);
-        event.addObject(objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS).convertValue(body, Map.class));
-        event.setOperation(validate ? Operation.VALIDATE : Operation.CREATE);
+        if (dokument.getSystemId() == null || StringUtils.isBlank(dokument.getSystemId().getIdentifikatorverdi())) {
+            dokument.setSystemId(new Identifikator() {{
+                setIdentifikatorverdi(event.getCorrId());
+            }});
+        }
+        event.addObject(objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS).convertValue(dokument, Map.class));
+        event.setOperation(operation);
         consumerEventUtil.send(event);
 
         statusCache.put(event.getCorrId(), event);
-
         URI location = UriComponentsBuilder.fromUriString(linker.self()).path("status/{id}").buildAndExpand(event.getCorrId()).toUri();
         return ResponseEntity.status(HttpStatus.ACCEPTED).location(location).build();
     }
 
-  
+
     @PutMapping("/systemid/{id:.+}")
     public ResponseEntity putDokumentfilBySystemId(
             @PathVariable String id,
             @RequestHeader(name = HeaderConstants.ORG_ID) String orgId,
             @RequestHeader(name = HeaderConstants.CLIENT) String client,
-            @RequestBody DokumentfilResource body
+            @RequestHeader(name = HttpHeaders.CONTENT_TYPE) String format,
+            @RequestHeader(name = HttpHeaders.CONTENT_DISPOSITION) String disposition,
+            @RequestBody byte[] body
     ) {
         log.debug("putDokumentfilBySystemId {}, OrgId: {}, Client: {}", id, orgId, client);
-        log.trace("Body: {}", body);
-        linker.mapLinks(body);
-        Event event = new Event(orgId, Constants.COMPONENT, NoarkActions.UPDATE_DOKUMENTFIL, client);
-        event.setQuery("systemid/" + id);
-        event.addObject(objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS).convertValue(body, Map.class));
-        event.setOperation(Operation.UPDATE);
-        fintAuditService.audit(event);
-
-        consumerEventUtil.send(event);
-
-        statusCache.put(event.getCorrId(), event);
-
-        URI location = UriComponentsBuilder.fromUriString(linker.self()).path("status/{id}").buildAndExpand(event.getCorrId()).toUri();
-        return ResponseEntity.status(HttpStatus.ACCEPTED).location(location).build();
+        return updateDokumentfil(Operation.UPDATE, orgId, client, format, disposition, body);
     }
   
 
