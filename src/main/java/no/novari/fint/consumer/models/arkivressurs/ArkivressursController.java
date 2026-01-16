@@ -1,8 +1,8 @@
 package no.novari.fint.consumer.models.arkivressurs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import no.fint.audit.FintAuditService;
 
+import no.fint.cache.exceptions.*;
 import no.novari.fint.consumer.config.Constants;
 import no.novari.fint.consumer.config.ConsumerProps;
 import no.novari.fint.consumer.event.ConsumerEventUtil;
@@ -29,10 +30,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
+import java.net.UnknownHostException;
 
 import java.util.Map;
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ import java.util.stream.Stream;
 import no.novari.fint.model.resource.arkiv.noark.ArkivressursResource;
 import no.novari.fint.model.resource.arkiv.noark.ArkivressursResources;
 import no.novari.fint.model.arkiv.noark.NoarkActions;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @Api(tags = {"Arkivressurs"})
@@ -365,5 +367,49 @@ public class ArkivressursController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).location(location).build();
     }
   
+
+    //
+    // Exception handlers
+    //
+    @ExceptionHandler(EventResponseException.class)
+    public ResponseEntity handleEventResponseException(EventResponseException e) {
+        return ResponseEntity.status(e.getStatus()).body(e.getResponse());
+    }
+
+    @ExceptionHandler(UpdateEntityMismatchException.class)
+    public ResponseEntity handleUpdateEntityMismatch(Exception e) {
+        return ResponseEntity.badRequest().body(ErrorResponse.of(e));
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity handleEntityNotFound(Exception e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorResponse.of(e));
+    }
+
+    @ExceptionHandler(CreateEntityMismatchException.class)
+    public ResponseEntity handleCreateEntityMismatch(Exception e) {
+        return ResponseEntity.badRequest().body(ErrorResponse.of(e));
+    }
+
+    @ExceptionHandler(EntityFoundException.class)
+    public ResponseEntity handleEntityFound(Exception e) {
+        return ResponseEntity.status(HttpStatus.FOUND).body(ErrorResponse.of(e));
+    }
+
+    @ExceptionHandler(CacheDisabledException.class)
+    public ResponseEntity handleBadRequest(Exception e) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ErrorResponse.of(e));
+    }
+
+    @ExceptionHandler(UnknownHostException.class)
+    public ResponseEntity handleUnkownHost(Exception e) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ErrorResponse.of(e));
+    }
+
+    @ExceptionHandler(CacheNotFoundException.class)
+    public ResponseEntity handleCacheNotFound(Exception e) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ErrorResponse.of(e));
+    }
+
 }
 
