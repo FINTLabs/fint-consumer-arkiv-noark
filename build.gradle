@@ -43,7 +43,7 @@ dependencies {
     compile('no.fint:fint-event-model:3.0.1')
     compile('no.fint:fint-events:2.4.0')
     compile('no.fint:fint-hazelcast:1.2.0')
-    compile('no.fintlabs:fint-relations:4.0.0-rc-2')
+    compile('no.fintlabs:fint-relations:4.0.0-rc-3')
     compile('no.fint:fint-spring-secrets:0.2.2')
     compile("no.fintlabs:fint-antlr:1.2.0")
 
