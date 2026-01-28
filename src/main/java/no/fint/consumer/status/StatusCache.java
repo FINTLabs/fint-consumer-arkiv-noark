@@ -10,7 +10,7 @@ import no.fint.event.model.Event;
 import no.fint.event.model.EventResponse;
 import no.fint.event.model.Operation;
 import no.fint.event.model.Status;
-import no.fint.model.resource.FintLinks;
+import no.novari.fint.model.resource.FintLinks;
 import no.fint.relations.FintLinker;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;

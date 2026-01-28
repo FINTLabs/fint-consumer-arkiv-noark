@@ -23,13 +23,16 @@ public enum Constants {
     public static final String CACHE_INITIALDELAY_DOKUMENTFIL = "${fint.consumer.cache.initialDelay.dokumentfil:1300000}";
     public static final String CACHE_FIXEDRATE_DOKUMENTFIL = "${fint.consumer.cache.fixedRate.dokumentfil:900000}";
     
-    public static final String CACHE_INITIALDELAY_KLASSIFIKASJONSSYSTEM = "${fint.consumer.cache.initialDelay.klassifikasjonssystem:1400000}";
+    public static final String CACHE_INITIALDELAY_KLASSE = "${fint.consumer.cache.initialDelay.klasse:1400000}";
+    public static final String CACHE_FIXEDRATE_KLASSE = "${fint.consumer.cache.fixedRate.klasse:900000}";
+    
+    public static final String CACHE_INITIALDELAY_KLASSIFIKASJONSSYSTEM = "${fint.consumer.cache.initialDelay.klassifikasjonssystem:1500000}";
     public static final String CACHE_FIXEDRATE_KLASSIFIKASJONSSYSTEM = "${fint.consumer.cache.fixedRate.klassifikasjonssystem:900000}";
     
-    public static final String CACHE_INITIALDELAY_SAK = "${fint.consumer.cache.initialDelay.sak:1500000}";
+    public static final String CACHE_INITIALDELAY_SAK = "${fint.consumer.cache.initialDelay.sak:1600000}";
     public static final String CACHE_FIXEDRATE_SAK = "${fint.consumer.cache.fixedRate.sak:900000}";
     
-    public static final String CACHE_INITIALDELAY_TILGANG = "${fint.consumer.cache.initialDelay.tilgang:1600000}";
+    public static final String CACHE_INITIALDELAY_TILGANG = "${fint.consumer.cache.initialDelay.tilgang:1700000}";
     public static final String CACHE_FIXEDRATE_TILGANG = "${fint.consumer.cache.fixedRate.tilgang:900000}";
     
 

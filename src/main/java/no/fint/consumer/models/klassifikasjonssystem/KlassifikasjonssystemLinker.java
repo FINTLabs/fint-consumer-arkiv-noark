@@ -1,7 +1,7 @@
 package no.fint.consumer.models.klassifikasjonssystem;
 
-import no.fint.model.resource.arkiv.noark.KlassifikasjonssystemResource;
-import no.fint.model.resource.arkiv.noark.KlassifikasjonssystemResources;
+import no.novari.fint.model.resource.arkiv.noark.KlassifikasjonssystemResource;
+import no.novari.fint.model.resource.arkiv.noark.KlassifikasjonssystemResources;
 import no.fint.relations.FintLinker;
 import org.springframework.stereotype.Component;
 

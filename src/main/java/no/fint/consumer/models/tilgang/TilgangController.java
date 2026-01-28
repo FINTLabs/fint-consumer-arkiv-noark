@@ -43,9 +43,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import no.fint.model.resource.arkiv.noark.TilgangResource;
-import no.fint.model.resource.arkiv.noark.TilgangResources;
-import no.fint.model.arkiv.noark.NoarkActions;
+import no.novari.fint.model.resource.arkiv.noark.TilgangResource;
+import no.novari.fint.model.resource.arkiv.noark.TilgangResources;
+import no.novari.fint.model.arkiv.noark.NoarkActions;
 
 @Slf4j
 @Api(tags = {"Tilgang"})

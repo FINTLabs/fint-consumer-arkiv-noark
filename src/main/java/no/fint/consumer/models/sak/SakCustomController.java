@@ -2,7 +2,7 @@ package no.fint.consumer.models.sak;
 
 import no.fint.consumer.utils.RestEndpoints;
 import no.fint.event.model.HeaderConstants;
-import no.fint.model.resource.arkiv.noark.SakResource;
+import no.novari.fint.model.resource.arkiv.noark.SakResource;
 import no.fint.relations.FintRelationsMediaType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;

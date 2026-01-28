@@ -1,7 +1,7 @@
 package no.fint.consumer.models.sak;
 
-import no.fint.model.resource.arkiv.noark.SakResource;
-import no.fint.model.resource.arkiv.noark.SakResources;
+import no.novari.fint.model.resource.arkiv.noark.SakResource;
+import no.novari.fint.model.resource.arkiv.noark.SakResources;
 import no.fint.relations.FintLinker;
 import org.springframework.stereotype.Component;
 

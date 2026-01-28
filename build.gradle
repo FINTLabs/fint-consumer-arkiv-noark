@@ -33,7 +33,7 @@ repositories {
 
 dependencies {
 
-    compile("no.fint:fint-arkiv-resource-model-java:${apiVersion}")
+    compile("no.novari:fint-arkiv-resource-model-java:${apiVersion}")
 
     compile('no.fint:fint-audit-azure-eventhub-plugin:1.0.0')
     compile('io.projectreactor:reactor-core:3.3.2.RELEASE')
@@ -43,7 +43,7 @@ dependencies {
     compile('no.fint:fint-event-model:3.0.1')
     compile('no.fint:fint-events:2.4.0')
     compile('no.fint:fint-hazelcast:1.2.0')
-    compile('no.fintlabs:fint-relations:3.0.0-rc-3')
+    compile('no.fintlabs:fint-relations:4.0.0-rc-4')
     compile('no.fint:fint-spring-secrets:0.2.2')
     compile("no.fintlabs:fint-antlr:1.2.0")
 

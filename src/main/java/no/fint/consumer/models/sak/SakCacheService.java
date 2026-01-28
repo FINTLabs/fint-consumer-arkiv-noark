@@ -26,10 +26,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import no.fint.model.arkiv.noark.Sak;
-import no.fint.model.resource.arkiv.noark.SakResource;
-import no.fint.model.arkiv.noark.NoarkActions;
-import no.fint.model.felles.kompleksedatatyper.Identifikator;
+import no.novari.fint.model.arkiv.noark.Sak;
+import no.novari.fint.model.resource.arkiv.noark.SakResource;
+import no.novari.fint.model.arkiv.noark.NoarkActions;
+import no.novari.fint.model.felles.kompleksedatatyper.Identifikator;
 
 @Slf4j
 @Service

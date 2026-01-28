@@ -15,7 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import no.fint.model.arkiv.noark.NoarkActions;
+import no.novari.fint.model.arkiv.noark.NoarkActions;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;

@@ -1,7 +1,7 @@
 package no.fint.consumer.models.arkivdel;
 
-import no.fint.model.resource.arkiv.noark.ArkivdelResource;
-import no.fint.model.resource.arkiv.noark.ArkivdelResources;
+import no.novari.fint.model.resource.arkiv.noark.ArkivdelResource;
+import no.novari.fint.model.resource.arkiv.noark.ArkivdelResources;
 import no.fint.relations.FintLinker;
 import org.springframework.stereotype.Component;
 

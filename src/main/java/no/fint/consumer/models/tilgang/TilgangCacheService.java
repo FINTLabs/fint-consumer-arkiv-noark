@@ -26,10 +26,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import no.fint.model.arkiv.noark.Tilgang;
-import no.fint.model.resource.arkiv.noark.TilgangResource;
-import no.fint.model.arkiv.noark.NoarkActions;
-import no.fint.model.felles.kompleksedatatyper.Identifikator;
+import no.novari.fint.model.arkiv.noark.Tilgang;
+import no.novari.fint.model.resource.arkiv.noark.TilgangResource;
+import no.novari.fint.model.arkiv.noark.NoarkActions;
+import no.novari.fint.model.felles.kompleksedatatyper.Identifikator;
 
 @Slf4j
 @Service

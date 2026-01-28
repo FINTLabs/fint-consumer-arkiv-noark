@@ -1,7 +1,7 @@
 package no.fint.consumer.models.dokumentfil;
 
-import no.fint.model.resource.arkiv.noark.DokumentfilResource;
-import no.fint.model.resource.arkiv.noark.DokumentfilResources;
+import no.novari.fint.model.resource.arkiv.noark.DokumentfilResource;
+import no.novari.fint.model.resource.arkiv.noark.DokumentfilResources;
 import no.fint.relations.FintLinker;
 import org.springframework.stereotype.Component;
 

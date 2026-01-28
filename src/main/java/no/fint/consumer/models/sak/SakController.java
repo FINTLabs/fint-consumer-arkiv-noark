@@ -43,9 +43,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import no.fint.model.resource.arkiv.noark.SakResource;
-import no.fint.model.resource.arkiv.noark.SakResources;
-import no.fint.model.arkiv.noark.NoarkActions;
+import no.novari.fint.model.resource.arkiv.noark.SakResource;
+import no.novari.fint.model.resource.arkiv.noark.SakResources;
+import no.novari.fint.model.arkiv.noark.NoarkActions;
 
 @Slf4j
 @Api(tags = {"Sak"})

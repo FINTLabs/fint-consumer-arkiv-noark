@@ -1,7 +1,7 @@
 package no.fint.consumer.models.arkivressurs;
 
-import no.fint.model.resource.arkiv.noark.ArkivressursResource;
-import no.fint.model.resource.arkiv.noark.ArkivressursResources;
+import no.novari.fint.model.resource.arkiv.noark.ArkivressursResource;
+import no.novari.fint.model.resource.arkiv.noark.ArkivressursResources;
 import no.fint.relations.FintLinker;
 import org.springframework.stereotype.Component;
 

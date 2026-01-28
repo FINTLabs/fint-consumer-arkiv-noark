@@ -1,7 +1,7 @@
 package no.fint.consumer.models.autorisasjon;
 
-import no.fint.model.resource.arkiv.noark.AutorisasjonResource;
-import no.fint.model.resource.arkiv.noark.AutorisasjonResources;
+import no.novari.fint.model.resource.arkiv.noark.AutorisasjonResource;
+import no.novari.fint.model.resource.arkiv.noark.AutorisasjonResources;
 import no.fint.relations.FintLinker;
 import org.springframework.stereotype.Component;
 

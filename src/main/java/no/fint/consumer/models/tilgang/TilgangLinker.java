@@ -1,7 +1,7 @@
 package no.fint.consumer.models.tilgang;
 
-import no.fint.model.resource.arkiv.noark.TilgangResource;
-import no.fint.model.resource.arkiv.noark.TilgangResources;
+import no.novari.fint.model.resource.arkiv.noark.TilgangResource;
+import no.novari.fint.model.resource.arkiv.noark.TilgangResources;
 import no.fint.relations.FintLinker;
 import org.springframework.stereotype.Component;
 

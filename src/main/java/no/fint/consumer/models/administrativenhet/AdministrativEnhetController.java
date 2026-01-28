@@ -43,9 +43,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import no.fint.model.resource.arkiv.noark.AdministrativEnhetResource;
-import no.fint.model.resource.arkiv.noark.AdministrativEnhetResources;
-import no.fint.model.arkiv.noark.NoarkActions;
+import no.novari.fint.model.resource.arkiv.noark.AdministrativEnhetResource;
+import no.novari.fint.model.resource.arkiv.noark.AdministrativEnhetResources;
+import no.novari.fint.model.arkiv.noark.NoarkActions;
 
 @Slf4j
 @Api(tags = {"AdministrativEnhet"})

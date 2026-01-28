@@ -1,7 +1,7 @@
 package no.fint.consumer.models.administrativenhet;
 
-import no.fint.model.resource.arkiv.noark.AdministrativEnhetResource;
-import no.fint.model.resource.arkiv.noark.AdministrativEnhetResources;
+import no.novari.fint.model.resource.arkiv.noark.AdministrativEnhetResource;
+import no.novari.fint.model.resource.arkiv.noark.AdministrativEnhetResources;
 import no.fint.relations.FintLinker;
 import org.springframework.stereotype.Component;
 
