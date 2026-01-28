@@ -5,7 +5,7 @@ import no.fint.consumer.event.SynchronousEvents
 import no.fint.event.model.Event
 import no.fint.event.model.Operation
 import no.fint.event.model.ResponseStatus
-import no.fint.model.resource.arkiv.noark.DokumentfilResource
+import no.novari.fint.model.resource.arkiv.noark.DokumentfilResource
 import org.spockframework.spring.SpringBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc

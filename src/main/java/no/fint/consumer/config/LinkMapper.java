@@ -8,7 +8,7 @@ import no.novari.fint.model.arkiv.noark.Arkivdel;
 import no.novari.fint.model.arkiv.noark.Arkivressurs;
 import no.novari.fint.model.arkiv.noark.Autorisasjon;
 import no.novari.fint.model.arkiv.noark.Dokumentfil;
-import no.novari.fint.model.utdanning.elev.Klasse;
+import no.novari.fint.model.arkiv.noark.Klasse;
 import no.novari.fint.model.arkiv.noark.Klassifikasjonssystem;
 import no.novari.fint.model.arkiv.noark.Sak;
 import no.novari.fint.model.arkiv.noark.Tilgang;
@@ -38,13 +38,6 @@ public class LinkMapper {
             .put("no.novari.fint.model.arkiv.kodeverk.JournalpostType", "/arkiv/kodeverk/journalposttype")
             .put("no.novari.fint.model.arkiv.kodeverk.JournalStatus", "/arkiv/kodeverk/journalstatus")
             .put("no.novari.fint.model.arkiv.kodeverk.Tilgangsgruppe", "/arkiv/kodeverk/tilgangsgruppe")
-            .put("no.novari.fint.model.utdanning.kodeverk.Skolear", "/utdanning/kodeverk/skolear")
-            .put("no.novari.fint.model.utdanning.kodeverk.Termin", "/utdanning/kodeverk/termin")
-            .put("no.novari.fint.model.utdanning.utdanningsprogram.Arstrinn", "/utdanning/utdanningsprogram/arstrinn")
-            .put("no.novari.fint.model.utdanning.utdanningsprogram.Skole", "/utdanning/utdanningsprogram/skole")
-            .put("no.novari.fint.model.utdanning.elev.Undervisningsforhold", "/utdanning/elev/undervisningsforhold")
-            .put("no.novari.fint.model.utdanning.elev.Klassemedlemskap", "/utdanning/elev/klassemedlemskap")
-            .put("no.novari.fint.model.utdanning.elev.Kontaktlarergruppe", "/utdanning/elev/kontaktlarergruppe")
             .put("no.novari.fint.model.arkiv.kodeverk.Klassifikasjonstype", "/arkiv/kodeverk/klassifikasjonstype")
             .put("no.novari.fint.model.arkiv.kodeverk.KorrespondansepartType", "/arkiv/kodeverk/korrespondanseparttype")
             .put("no.novari.fint.model.arkiv.kodeverk.Merknadstype", "/arkiv/kodeverk/merknadstype")
