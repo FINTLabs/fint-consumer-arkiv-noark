@@ -8,7 +8,7 @@ import no.novari.fint.model.arkiv.noark.Arkivdel;
 import no.novari.fint.model.arkiv.noark.Arkivressurs;
 import no.novari.fint.model.arkiv.noark.Autorisasjon;
 import no.novari.fint.model.arkiv.noark.Dokumentfil;
-import no.novari.fint.model.utdanning.elev.Klasse;
+import no.novari.fint.model.arkiv.noark.Klasse;
 import no.novari.fint.model.arkiv.noark.Klassifikasjonssystem;
 import no.novari.fint.model.arkiv.noark.Sak;
 import no.novari.fint.model.arkiv.noark.Tilgang;
@@ -26,33 +26,26 @@ public class LinkMapper {
             .put(Klassifikasjonssystem.class.getName(), contextPath + RestEndpoints.KLASSIFIKASJONSSYSTEM)
             .put(Sak.class.getName(), contextPath + RestEndpoints.SAK)
             .put(Tilgang.class.getName(), contextPath + RestEndpoints.TILGANG)
-            .put("no.novari.fint.model.administrasjon.organisasjon.Organisasjonselement", "/model/administrasjon/organisasjon/organisasjonselement")
-            .put("no.novari.fint.model.felles.kodeverk.iso.Landkode", "/model/felles/kodeverk/iso/landkode")
-            .put("no.novari.fint.model.administrasjon.personal.Personalressurs", "/model/administrasjon/personal/personalressurs")
-            .put("no.novari.fint.model.arkiv.kodeverk.Tilgangsrestriksjon", "/model/arkiv/kodeverk/tilgangsrestriksjon")
-            .put("no.novari.fint.model.arkiv.kodeverk.DokumentStatus", "/model/arkiv/kodeverk/dokumentstatus")
-            .put("no.novari.fint.model.arkiv.kodeverk.DokumentType", "/model/arkiv/kodeverk/dokumenttype")
-            .put("no.novari.fint.model.arkiv.kodeverk.TilknyttetRegistreringSom", "/model/arkiv/kodeverk/tilknyttetregistreringsom")
-            .put("no.novari.fint.model.arkiv.kodeverk.Format", "/model/arkiv/kodeverk/format")
-            .put("no.novari.fint.model.arkiv.kodeverk.Variantformat", "/model/arkiv/kodeverk/variantformat")
-            .put("no.novari.fint.model.arkiv.kodeverk.JournalpostType", "/model/arkiv/kodeverk/journalposttype")
-            .put("no.novari.fint.model.arkiv.kodeverk.JournalStatus", "/model/arkiv/kodeverk/journalstatus")
-            .put("no.novari.fint.model.arkiv.kodeverk.Tilgangsgruppe", "/model/arkiv/kodeverk/tilgangsgruppe")
-            .put("no.novari.fint.model.utdanning.kodeverk.Skolear", "/model/utdanning/kodeverk/skolear")
-            .put("no.novari.fint.model.utdanning.kodeverk.Termin", "/model/utdanning/kodeverk/termin")
-            .put("no.novari.fint.model.utdanning.utdanningsprogram.Arstrinn", "/model/utdanning/utdanningsprogram/arstrinn")
-            .put("no.novari.fint.model.utdanning.utdanningsprogram.Skole", "/model/utdanning/utdanningsprogram/skole")
-            .put("no.novari.fint.model.utdanning.elev.Undervisningsforhold", "/model/utdanning/elev/undervisningsforhold")
-            .put("no.novari.fint.model.utdanning.elev.Klassemedlemskap", "/model/utdanning/elev/klassemedlemskap")
-            .put("no.novari.fint.model.utdanning.elev.Kontaktlarergruppe", "/model/utdanning/elev/kontaktlarergruppe")
-            .put("no.novari.fint.model.arkiv.kodeverk.Klassifikasjonstype", "/model/arkiv/kodeverk/klassifikasjonstype")
-            .put("no.novari.fint.model.arkiv.kodeverk.KorrespondansepartType", "/model/arkiv/kodeverk/korrespondanseparttype")
-            .put("no.novari.fint.model.arkiv.kodeverk.Merknadstype", "/model/arkiv/kodeverk/merknadstype")
-            .put("no.novari.fint.model.arkiv.kodeverk.PartRolle", "/model/arkiv/kodeverk/partrolle")
-            .put("no.novari.fint.model.arkiv.kodeverk.Saksmappetype", "/model/arkiv/kodeverk/saksmappetype")
-            .put("no.novari.fint.model.arkiv.kodeverk.Saksstatus", "/model/arkiv/kodeverk/saksstatus")
-            .put("no.novari.fint.model.arkiv.kodeverk.Skjermingshjemmel", "/model/arkiv/kodeverk/skjermingshjemmel")
-            .put("no.novari.fint.model.arkiv.kodeverk.Rolle", "/model/arkiv/kodeverk/rolle")
+            .put("no.novari.fint.model.administrasjon.organisasjon.Organisasjonselement", "/administrasjon/organisasjon/organisasjonselement")
+            .put("no.novari.fint.model.felles.kodeverk.iso.Landkode", "/felles/kodeverk/iso/landkode")
+            .put("no.novari.fint.model.administrasjon.personal.Personalressurs", "/administrasjon/personal/personalressurs")
+            .put("no.novari.fint.model.arkiv.kodeverk.Tilgangsrestriksjon", "/arkiv/kodeverk/tilgangsrestriksjon")
+            .put("no.novari.fint.model.arkiv.kodeverk.DokumentStatus", "/arkiv/kodeverk/dokumentstatus")
+            .put("no.novari.fint.model.arkiv.kodeverk.DokumentType", "/arkiv/kodeverk/dokumenttype")
+            .put("no.novari.fint.model.arkiv.kodeverk.TilknyttetRegistreringSom", "/arkiv/kodeverk/tilknyttetregistreringsom")
+            .put("no.novari.fint.model.arkiv.kodeverk.Format", "/arkiv/kodeverk/format")
+            .put("no.novari.fint.model.arkiv.kodeverk.Variantformat", "/arkiv/kodeverk/variantformat")
+            .put("no.novari.fint.model.arkiv.kodeverk.JournalpostType", "/arkiv/kodeverk/journalposttype")
+            .put("no.novari.fint.model.arkiv.kodeverk.JournalStatus", "/arkiv/kodeverk/journalstatus")
+            .put("no.novari.fint.model.arkiv.kodeverk.Tilgangsgruppe", "/arkiv/kodeverk/tilgangsgruppe")
+            .put("no.novari.fint.model.arkiv.kodeverk.Klassifikasjonstype", "/arkiv/kodeverk/klassifikasjonstype")
+            .put("no.novari.fint.model.arkiv.kodeverk.KorrespondansepartType", "/arkiv/kodeverk/korrespondanseparttype")
+            .put("no.novari.fint.model.arkiv.kodeverk.Merknadstype", "/arkiv/kodeverk/merknadstype")
+            .put("no.novari.fint.model.arkiv.kodeverk.PartRolle", "/arkiv/kodeverk/partrolle")
+            .put("no.novari.fint.model.arkiv.kodeverk.Saksmappetype", "/arkiv/kodeverk/saksmappetype")
+            .put("no.novari.fint.model.arkiv.kodeverk.Saksstatus", "/arkiv/kodeverk/saksstatus")
+            .put("no.novari.fint.model.arkiv.kodeverk.Skjermingshjemmel", "/arkiv/kodeverk/skjermingshjemmel")
+            .put("no.novari.fint.model.arkiv.kodeverk.Rolle", "/arkiv/kodeverk/rolle")
             /* .put(TODO,TODO) */
             .build();
     }
