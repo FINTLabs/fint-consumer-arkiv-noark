@@ -5,9 +5,9 @@ ARG apiVersion
 ARG buildFlags=""
 RUN gradle --no-daemon ${buildFlags} -PapiVersion=${apiVersion} build
 
-FROM gcr.io/distroless/java:8
+FROM eclipse-temurin:8-jre
 ENV JAVA_TOOL_OPTIONS -XX:+ExitOnOutOfMemoryError
 COPY --from=builder /home/gradle/build/deps/external/*.jar /data/
 COPY --from=builder /home/gradle/build/deps/fint/*.jar /data/
 COPY --from=builder /home/gradle/build/libs/fint-consumer-arkiv-noark-*.jar /data/fint-consumer-arkiv-noark.jar
-CMD ["/data/fint-consumer-arkiv-noark.jar"]
+ENTRYPOINT ["java", "-jar", "/data/fint-consumer-arkiv-noark.jar"]
