@@ -1,13 +1,13 @@
-FROM gradle:4.10.3-jdk8-alpine as builder
-USER root
+FROM eclipse-temurin:8-jdk AS builder
+WORKDIR /workspace
 COPY . .
 ARG apiVersion
 ARG buildFlags=""
-RUN gradle --no-daemon ${buildFlags} -PapiVersion=${apiVersion} build
+RUN ./gradlew --no-daemon ${buildFlags} -PapiVersion=${apiVersion} build
 
-FROM gcr.io/distroless/java:8
-ENV JAVA_TOOL_OPTIONS -XX:+ExitOnOutOfMemoryError
-COPY --from=builder /home/gradle/build/deps/external/*.jar /data/
-COPY --from=builder /home/gradle/build/deps/fint/*.jar /data/
-COPY --from=builder /home/gradle/build/libs/fint-consumer-arkiv-noark-*.jar /data/fint-consumer-arkiv-noark.jar
-CMD ["/data/fint-consumer-arkiv-noark.jar"]
+FROM eclipse-temurin:8-jre
+ENV JAVA_TOOL_OPTIONS="-XX:+ExitOnOutOfMemoryError"
+COPY --from=builder /workspace/build/deps/external/*.jar /data/
+COPY --from=builder /workspace/build/deps/fint/*.jar /data/
+COPY --from=builder /workspace/build/libs/fint-consumer-arkiv-noark-*.jar /data/fint-consumer-arkiv-noark.jar
+ENTRYPOINT ["java", "-jar", "/data/fint-consumer-arkiv-noark.jar"]
